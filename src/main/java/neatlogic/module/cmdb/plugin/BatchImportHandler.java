@@ -49,6 +49,7 @@ import neatlogic.module.cmdb.dao.mapper.batchimport.ImportMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiViewMapper;
 import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
+import neatlogic.module.cmdb.dao.mapper.globalattr.GlobalAttrMapper;
 import neatlogic.module.cmdb.service.ci.CiService;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import org.apache.commons.collections4.CollectionUtils;
@@ -86,8 +87,16 @@ public class BatchImportHandler {
 
     private static CiEntityService ciEntityService;
 
+    private static GlobalAttrMapper globalAttrMapper;
+
     private static CiMapper ciMapper;
+
     private AttrValueHandlerFactory attrValueHandlerFactory;
+
+    @Autowired
+    private void setGlobalAttrMapper(GlobalAttrMapper _globalAttrMapper) {
+        globalAttrMapper = _globalAttrMapper;
+    }
 
     @Autowired
     private void setCiMapper(CiMapper _ciMapper) {
@@ -448,8 +457,13 @@ public class BatchImportHandler {
                                                     GlobalAttrVo globalAttr = (GlobalAttrVo) header;
                                                     JSONArray valueList = new JSONArray();
                                                     for (String c : content.split(",")) {
-                                                        Optional<GlobalAttrItemVo> op = globalAttr.getItemList().stream().filter(d -> d.getValue().equalsIgnoreCase(c)).findFirst();
-                                                        op.ifPresent(valueList::add);
+                                                        GlobalAttrItemVo attrItem = new GlobalAttrItemVo();
+                                                        attrItem.setAttrId(globalAttr.getId());
+                                                        attrItem.setValue(c);
+                                                        List<GlobalAttrItemVo> globalAttrItemList = globalAttrMapper.searchGlobalAttrItem(attrItem);
+                                                        // Optional<GlobalAttrItemVo> op = globalAttr.getItemList().stream().filter(d -> d.getValue().equalsIgnoreCase(c)).findFirst();
+                                                        //op.ifPresent(valueList::add);
+                                                        valueList.addAll(globalAttrItemList);
                                                     }
                                                     if (CollectionUtils.isNotEmpty(valueList)) {
                                                         ciEntityTransactionVo.addGlobalAttrEntityData(globalAttr, valueList);

@@ -15,16 +15,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
+import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.framework.cmdb.dto.transaction.CiEntityTransactionVo;
 import neatlogic.framework.cmdb.enums.TransactionActionType;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.*;
 import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
-import neatlogic.framework.cmdb.auth.label.CMDB_BASE;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -85,6 +85,7 @@ public class ValidateCiEntityApi extends PrivateApiComponentBase {
         boolean hasChange = ciEntityService.validateCiEntityTransaction(ciEntityTransactionVo);
         JSONObject returnObj = new JSONObject();
         returnObj.put("hasChange", hasChange);
+        returnObj.put("ciEntityId", ciEntityTransactionVo.getCiEntityId());
         return returnObj;
     }
 

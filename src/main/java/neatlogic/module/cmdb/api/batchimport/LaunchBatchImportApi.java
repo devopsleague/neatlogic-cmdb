@@ -41,7 +41,7 @@ import java.util.List;
 @Service
 @OperationType(type = OperationTypeEnum.OPERATE)
 @Transactional
-public class FireBatchImportApi extends PrivateApiComponentBase {
+public class LaunchBatchImportApi extends PrivateApiComponentBase {
 
     @Resource
     private ImportMapper importMapper;
@@ -49,7 +49,7 @@ public class FireBatchImportApi extends PrivateApiComponentBase {
 
     @Override
     public String getToken() {
-        return "/cmdb/import/fire";
+        return "/cmdb/import/launch";
     }
 
     @Override

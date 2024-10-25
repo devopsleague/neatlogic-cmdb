@@ -111,6 +111,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             @Param(name = "idList", type = ApiParamType.JSONARRAY, desc = "nmcac.searchcientityapi.input.param.desc.idlist）"),
             @Param(name = "needAction", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needaction"),
             @Param(name = "needCheck", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needcheck"),
+            @Param(name = "needError", type = ApiParamType.BOOLEAN, desc = "是否需要异常列"),
             @Param(name = "needExpand", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needexpand"),
             @Param(name = "needActionType", type = ApiParamType.BOOLEAN, desc = "nmcac.searchcientityapi.input.param.desc.needactiontype"),
             @Param(name = "relCiEntityId", type = ApiParamType.LONG, desc = "nmcac.searchcientityapi.input.param.desc.relcientityid"),
@@ -208,6 +209,7 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             boolean needAction = jsonObj.getBooleanValue("needAction");
             boolean needCheck = jsonObj.getBooleanValue("needCheck");
             boolean needExpand = jsonObj.getBooleanValue("needExpand");
+            boolean needError = jsonObj.getBooleanValue("needError");
             boolean needActionType = jsonObj.getBooleanValue("needActionType");
             JSONArray showAttrRelList = jsonObj.getJSONArray("showAttrRelList");
             Set<String> showAttrRelSet = new HashSet<>();
@@ -240,6 +242,15 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                 theadList.add(new JSONObject() {
                     {
                         this.put("key", "expander");
+                    }
+                });
+            }
+            if (needError) {
+                // 增加状态列
+                theadList.add(new JSONObject() {
+                    {
+                        this.put("key", "_error");
+                        this.put("title", "异常");
                     }
                 });
             }
@@ -339,7 +350,12 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
             } else {
                 ciEntityList = new ArrayList<>();
                 for (int i = 0; i < ciEntityObjList.size(); i++) {
-                    ciEntityList.add(JSON.toJavaObject(ciEntityObjList.getJSONObject(i), CiEntityVo.class));
+                    JSONObject obj = ciEntityObjList.getJSONObject(i);
+                    CiEntityVo entity = JSON.toJavaObject(obj, CiEntityVo.class);
+                    for (String k : obj.keySet().stream().filter(d -> d.startsWith("#")).collect(Collectors.toList())) {
+                        entity.addSpecialParameter(k, obj.get(k));
+                    }
+                    ciEntityList.add(entity);
                 }
             }
             JSONArray tbodyList = new JSONArray();
@@ -452,6 +468,11 @@ public class SearchCiEntityApi extends PrivateApiComponentBase implements ISearc
                                     entityObj.put("isDisabled", true);//禁用前端复选框
                                 }
                             }
+                        }
+                    }
+                    if (MapUtils.isNotEmpty(entity.getSpecialParamterMap())) {
+                        for (String key : entity.getSpecialParamterMap().keySet()) {
+                            entityObj.put(key, entity.getSpecialParamterMap().get(key));
                         }
                     }
                     tbodyList.add(entityObj);

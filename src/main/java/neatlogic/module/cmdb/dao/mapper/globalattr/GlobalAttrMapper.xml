@@ -127,6 +127,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <if test="keyword != null and keyword != ''">
             and value like concat(#{keyword}, '%')
         </if>
+        <if test="value != null and value != ''">
+            and value = #{value}
+        </if>
         <if test="defaultValue != null and defaultValue.size() > 0">
             AND `id` IN
             <foreach collection="defaultValue" item="item" open="(" separator="," close=")">
