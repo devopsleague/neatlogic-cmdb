@@ -1754,7 +1754,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 or `abbr_name` LIKE concat('%', #{keyword}, '%') or `app_module_abbr_name` LIKE concat('%', #{keyword},
                 '%'))
             </if>
-            and LP{id=maxLimitId}
         </where>
     </select>
 
@@ -1786,7 +1785,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         <foreach collection="list" item="id" open="(" close=")" separator=",">
             #{id}
         </foreach>
-        and LP{id=maxLimitId}
         </where>
     </select>
 
