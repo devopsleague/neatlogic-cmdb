@@ -326,11 +326,14 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
     public List<CustomViewDataGroupVo> searchCustomViewDataGroup(CustomViewConditionVo customViewConditionVo) {
         CustomViewAttrVo customViewAttrVo = customViewMapper.getCustomViewAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
         CustomViewConstAttrVo customViewConstAttrVo = customViewMapper.getCustomViewConstAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
+        CustomViewGlobalAttrVo customViewGlobalAttrVo = customViewMapper.getCustomViewGlobalAttrByUuid(customViewConditionVo.getCustomViewId(), customViewConditionVo.getGroupBy());
+
         List<CustomViewAttrVo> customViewAttrList = customViewMapper.getCustomViewAttrByCustomViewId(new CustomViewAttrVo(customViewConditionVo.getCustomViewId()));
         //去掉所有引用属性
         customViewAttrList = customViewAttrList.stream().filter(attr -> attr.getAttrVo().getTargetCiId() == null).collect(Collectors.toList());
 
         List<CustomViewConstAttrVo> customViewConstAttrList = customViewMapper.getCustomViewConstAttrByCustomViewId(new CustomViewConstAttrVo(customViewConditionVo.getCustomViewId()));
+        List<CustomViewGlobalAttrVo> customViewGlobalAttrList = customViewMapper.getCustomViewGlobalAttrByCustomViewId(new CustomViewGlobalAttrVo(customViewConditionVo.getCustomViewId()));
         Map<String, AttrVo> attrMap = new HashMap<>();
         Map<String, CustomViewAttrVo> attrNameMap = new HashMap<>();
         //Map<String, CustomViewConstAttrVo> constAttrMap = new HashMap<>();
@@ -380,7 +383,7 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
         List<CustomViewConditionFieldVo> customViewConditionFieldList = new ArrayList<>();
         customViewConditionFieldList.addAll(customViewAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "attr")).collect(Collectors.toList()));
         customViewConditionFieldList.addAll(customViewConstAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "constattr")).collect(Collectors.toList()));
-
+        customViewConditionFieldList.addAll(customViewGlobalAttrList.stream().map(attr -> new CustomViewConditionFieldVo(attr.getUuid(), "globalattr")).collect(Collectors.toList()));
         customViewConditionVo.setFieldList(customViewConditionFieldList);
 
         List<CustomViewDataGroupVo> groupList = customViewDataMapper.searchCustomViewDataGroup(customViewConditionVo);
@@ -393,6 +396,9 @@ public class CustomViewDataServiceImpl implements CustomViewDataService, ICustom
             } else if (customViewConstAttrVo != null) {
                 customViewDataGroupVo.setAttrAlias(customViewConstAttrVo.getAlias());
                 customViewDataGroupVo.setAttrUuid(customViewConstAttrVo.getUuid());
+            } else if (customViewGlobalAttrVo != null) {
+                customViewDataGroupVo.setAttrAlias(customViewGlobalAttrVo.getAlias());
+                customViewDataGroupVo.setAttrUuid(customViewGlobalAttrVo.getUuid());
             }
             if (CollectionUtils.isNotEmpty(customViewConditionVo.getValueFilterList())) {
                 //必须要复制一份，否则序列化成json会出错

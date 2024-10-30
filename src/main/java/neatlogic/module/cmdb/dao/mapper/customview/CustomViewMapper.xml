@@ -62,6 +62,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
           and uuid = #{uuid}
     </select>
 
+    <select id="getCustomViewGlobalAttrByUuid" resultType="neatlogic.framework.cmdb.dto.customview.CustomViewGlobalAttrVo">
+        SELECT customview_id      AS customViewId,
+               customview_ci_uuid AS customViewCiUuid,
+               uuid,
+               attr_id            AS attrId,
+               name,
+               alias,
+               sort,
+               is_hidden          AS isHidden,
+               is_primary         AS isPrimary,
+               `condition`        AS conditionStr
+        FROM `cmdb_customview_globalattr`
+        WHERE customview_id = #{customViewId}
+          and uuid = #{uuid}
+    </select>
+
     <select id="getCustomViewAttrByUuid"
             resultType="neatlogic.framework.cmdb.dto.customview.CustomViewAttrVo">
         SELECT customview_id      AS customViewId,

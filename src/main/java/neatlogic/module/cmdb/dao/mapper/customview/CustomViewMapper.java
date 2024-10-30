@@ -33,6 +33,8 @@ public interface CustomViewMapper {
 
     CustomViewAttrVo getCustomViewAttrByUuid(@Param("customViewId") Long customViewId, @Param("uuid") String uuid);
 
+    CustomViewGlobalAttrVo getCustomViewGlobalAttrByUuid(@Param("customViewId") Long customViewId, @Param("uuid") String uuid);
+
     CustomViewVo getCustomViewById(Long customViewId);
 
     CustomViewVo getCustomViewByName(String customViewName);
