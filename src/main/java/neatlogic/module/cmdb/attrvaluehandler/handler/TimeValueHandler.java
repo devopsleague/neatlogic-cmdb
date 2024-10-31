@@ -26,6 +26,8 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @Service
@@ -94,6 +96,23 @@ public class TimeValueHandler implements IAttrValueHandler {
     @Override
     public boolean isNeedWholeRow() {
         return false;
+    }
+
+    @Override
+    public Object transferValueListToInput(AttrVo attrVo, Object value) {
+        if (value != null) {
+            String v = value.toString();
+            String regex = "\\d{2}:\\d{2}:\\d{2}";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(v);
+            if (matcher.find()) {
+                return new JSONArray() {{
+                    this.add(matcher.group());
+                }};
+            }
+            return null; // 如果没有找到时间部分
+        }
+        return null;
     }
 
     @Override
