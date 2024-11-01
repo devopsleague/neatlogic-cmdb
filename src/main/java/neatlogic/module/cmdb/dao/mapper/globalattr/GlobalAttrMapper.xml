@@ -118,6 +118,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         order by sort
     </select>
 
+    <select id="getAllGlobalAttrItemByAttrId" parameterType="java.lang.Long"
+            resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
+        select id, value, attr_id as attrId, sort
+        from cmdb_global_attritem
+        where attr_id = #{attrId}
+        order by sort
+    </select>
+
 
     <select id="searchGlobalAttrItem" parameterType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo"
             resultType="neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo">
