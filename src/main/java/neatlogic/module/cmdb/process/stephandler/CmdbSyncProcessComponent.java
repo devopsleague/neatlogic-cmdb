@@ -910,9 +910,7 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                     if (valueObj instanceof JSONObject) {
                         valueList.add(valueObj);
                     } else {
-                        GlobalAttrItemVo globalAttrItemVo = new GlobalAttrItemVo();
-                        globalAttrItemVo.setAttrId(globalAttrVo.getId());
-                        List<GlobalAttrItemVo> itemList = globalAttrMapper.searchGlobalAttrItem(globalAttrItemVo);
+                        List<GlobalAttrItemVo> itemList = globalAttrMapper.getAllGlobalAttrItemByAttrId(globalAttrVo.getId());
                         for (GlobalAttrItemVo item : itemList) {
                             if (Objects.equals(item.getValue(), valueObj)
                                     || Objects.equals(item.getId().toString(), valueObj.toString())) {
