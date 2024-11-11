@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.group;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
@@ -179,9 +180,9 @@ public class CiEntityGroupManager {
                     gVo.setError("");
                 } catch (Exception ex) {
                     logger.error(ex.getMessage(), ex);
-                    String message = "";
+                    String message;
                     if (ex instanceof ApiRuntimeException) {
-                        message = ((ApiRuntimeException) ex).getMessage();
+                        message = ex.getMessage();
                     } else {
                         message = ExceptionUtils.getStackTrace(ex);
                         logger.error(ex.getMessage(), ex);
@@ -224,9 +225,9 @@ public class CiEntityGroupManager {
         return false;
     }
 
-    public static void groupCi(Long ciId) {
-
-    }
+//    public static void groupCi(Long ciId) {
+//
+//    }
 
     private static boolean matchRule(CiEntityVo ciEntityVo, CiGroupVo ciGroupVo) {
         JSONObject ruleObj = ciGroupVo.getRule();
@@ -239,7 +240,7 @@ public class CiEntityGroupManager {
                 StringBuilder script = new StringBuilder();
                 JSONObject conditionObj = new JSONObject();
                 for (int i = 0; i < conditionGroupList.size(); i++) {
-                    ConditionGroupVo conditionGroupVo = JSONObject.toJavaObject(conditionGroupList.getJSONObject(i), ConditionGroupVo.class);
+                    ConditionGroupVo conditionGroupVo = JSON.toJavaObject(conditionGroupList.getJSONObject(i), ConditionGroupVo.class);
                     if (i > 0 && CollectionUtils.isNotEmpty(conditionGroupRelList)) {
                         if (conditionGroupRelList.size() >= i) {
                             String joinType = conditionGroupRelList.getString(i - 1);
@@ -323,14 +324,14 @@ public class CiEntityGroupManager {
         return null;
     }
 
-    public static void main(String[] arg) {
-        JSONArray valueList1 = new JSONArray();
-        JSONArray valueList2 = new JSONArray();
-        valueList1.add("1");
-        valueList1.add("2");
-
-        valueList2.add("1");
-        System.out.println(valueList1.containsAll(valueList2));
-    }
+//    public static void main(String[] arg) {
+//        JSONArray valueList1 = new JSONArray();
+//        JSONArray valueList2 = new JSONArray();
+//        valueList1.add("1");
+//        valueList1.add("2");
+//
+//        valueList2.add("1");
+//        System.out.println(valueList1.containsAll(valueList2));
+//    }
 
 }
