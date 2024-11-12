@@ -83,6 +83,14 @@ public class ListAppSystemForTreeApi extends PrivateApiComponentBase {
                 return TableResultUtil.getResult(tbodyList, searchVo);
             }
             tbodyList = resourceMapper.getAppSystemListByIdList(appSystemIdList);
+            List<Long> hasModuleAppSystemIdList = resourceMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
+            if (CollectionUtils.isNotEmpty(hasModuleAppSystemIdList)) {
+                for (AppSystemVo appSystemVo : tbodyList) {
+                    if (hasModuleAppSystemIdList.contains(appSystemVo.getId())) {
+                        appSystemVo.setIsHasModule(1);
+                    }
+                }
+            }
             if (StringUtils.isNotEmpty(searchVo.getKeyword())) {
                 List<AppModuleVo> appModuleList = resourceMapper.getAppModuleListByKeywordAndAppSystemIdList(keyword, appSystemIdList);
                 if (CollectionUtils.isNotEmpty(appModuleList)) {
@@ -94,15 +102,6 @@ public class ListAppSystemForTreeApi extends PrivateApiComponentBase {
                         List<AppModuleVo> appModuleVoList = appModuleMap.get(appSystemVo.getId());
                         if (CollectionUtils.isNotEmpty(appModuleVoList)) {
                             appSystemVo.setAppModuleList(appModuleVoList);
-                            appSystemVo.setIsHasModule(1);
-                        }
-                    }
-                }
-            } else {
-                List<Long> hasModuleAppSystemIdList = resourceMapper.getHasModuleAppSystemIdListByAppSystemIdList(appSystemIdList);
-                if (CollectionUtils.isNotEmpty(hasModuleAppSystemIdList)) {
-                    for (AppSystemVo appSystemVo : tbodyList) {
-                        if (hasModuleAppSystemIdList.contains(appSystemVo.getId())) {
                             appSystemVo.setIsHasModule(1);
                         }
                     }
