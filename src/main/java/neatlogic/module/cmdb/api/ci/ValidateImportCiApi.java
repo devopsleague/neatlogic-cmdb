@@ -126,14 +126,16 @@ public class ValidateImportCiApi extends PrivateBinaryStreamApiComponentBase {
                             attrObj.put("name", attrVo.getName());
                             attrObj.put("label", attrVo.getLabel());
                             attrObj.put("error", new JSONArray());
-                            AttrVo oldAttrVo = attrMapper.getAttrById(attrVo.getId());
+                            AttrVo oldAttrVo = attrMapper.getAttrByCiIdAndName(ciVo.getId(), attrVo.getName());
                             if (oldAttrVo == null) {
                                 attrObj.put("_action", "insert");
                                 hasChange = true;
                             } else {
-                                if (Objects.equals(oldAttrVo.getName(), attrVo.getName())
+                                if (!Objects.equals(oldAttrVo.getType(), attrVo.getType())) {
+                                    attrObj.put("_action", "update");
+                                    attrObj.getJSONArray("error").add("属性类型发生变化，原类型是“" + oldAttrVo.getTypeText() + "”，新类型是“" + attrVo.getTypeText() + "”");
+                                } else if (Objects.equals(oldAttrVo.getName(), attrVo.getName())
                                         && Objects.equals(oldAttrVo.getLabel(), attrVo.getLabel())
-                                        && Objects.equals(oldAttrVo.getType(), attrVo.getType())
                                         && Objects.equals(oldAttrVo.getIsRequired(), attrVo.getIsRequired())
                                         && Objects.equals(oldAttrVo.getConfigStr(), attrVo.getConfigStr())) {
                                     attrObj.put("_action", "same");

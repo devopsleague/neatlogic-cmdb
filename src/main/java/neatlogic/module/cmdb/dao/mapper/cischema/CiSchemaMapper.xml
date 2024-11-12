@@ -118,9 +118,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
                 ,ADD INDEX `index_${attrVo.id}` (`${attrVo.id}`) USING BTREE
             </when>
         </choose>
-        <if test="attrVo.isSearchAble != null and attrVo.isSearchAble == 1">
-            ,ADD INDEX `index_${attrVo.id}_hash` (`${attrVo.id}_hash`) USING BTREE
-        </if>
     </insert>
 
     <insert id="insertCiTable">

@@ -91,16 +91,36 @@ public class AttrServiceImpl implements AttrService {
         handler.afterInsert(attrVo);
         if (!handler.isNeedTargetCi()) {
             //由于以下操作是DDL操作，所以需要使用EscapeTransactionJob避开当前事务，否则在进行DDL操作之前事务就会提交，如果DDL出错，则上面的事务就无法回滚了
-            int indexCount = ciSchemaMapper.getIndexCount(TenantContext.get().getDataDbName(), attrVo.getCiId());
-            if (indexCount <= 60) {
-                EscapeTransactionJob.State s = new EscapeTransactionJob(() ->
-
-                        ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo)).execute();
-                if (!s.isSucceed()) {
-                    throw new InsertAttrToSchemaException(attrVo.getName());
+            EscapeTransactionJob.State s = new EscapeTransactionJob(() -> {
+                try {
+                    if (ciSchemaMapper.checkColumnIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
+                        ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
+                    }
+                    if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
+                        if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
+                            //创建索引
+                            int indexCount = ciSchemaMapper.getIndexCount(TenantContext.get().getDataDbName(), attrVo.getCiId());
+                            if (indexCount <= 60) {
+                                ciSchemaMapper.addAttrIndex(attrVo.getCiTableName(), attrVo.getId());
+                            } else {
+                                throw new InsertAttrToSchemaException(attrVo.getName(), 60);
+                            }
+                        }
+                    } else {
+                        if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) > 0) {
+                            //删除索引
+                            ciSchemaMapper.deleteAttrIndex(attrVo.getCiTableName(), attrVo.getId());
+                        }
+                    }
+                } catch (Exception ex) {
+                    //如果报重复列异常，代表列已存在，这种异常无需处理
+                    if (!ex.getMessage().contains("Duplicate")) {
+                        throw ex;
+                    }
                 }
-            } else {
-                throw new InsertAttrToSchemaException(attrVo.getName(), 60);
+            }).execute();
+            if (!s.isSucceed()) {
+                throw new InsertAttrToSchemaException(attrVo.getName());
             }
         }
     }
@@ -137,22 +157,21 @@ public class AttrServiceImpl implements AttrService {
                 try {
                     if (ciSchemaMapper.checkColumnIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
                         ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
+                    }
+                    if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
+                        if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
+                            //创建索引
+                            int indexCount = ciSchemaMapper.getIndexCount(TenantContext.get().getDataDbName(), attrVo.getCiId());
+                            if (indexCount <= 60) {
+                                ciSchemaMapper.addAttrIndex(attrVo.getCiTableName(), attrVo.getId());
+                            } else {
+                                throw new InsertAttrToSchemaException(attrVo.getName(), 60);
+                            }
+                        }
                     } else {
-                        if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
-                            if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
-                                //创建索引
-                                int indexCount = ciSchemaMapper.getIndexCount(TenantContext.get().getDataDbName(), attrVo.getCiId());
-                                if (indexCount <= 60) {
-                                    ciSchemaMapper.addAttrIndex(attrVo.getCiTableName(), attrVo.getId());
-                                } else {
-                                    throw new InsertAttrToSchemaException(attrVo.getName(), 60);
-                                }
-                            }
-                        } else {
-                            if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) > 0) {
-                                //删除索引
-                                ciSchemaMapper.deleteAttrIndex(attrVo.getCiTableName(), attrVo.getId());
-                            }
+                        if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) > 0) {
+                            //删除索引
+                            ciSchemaMapper.deleteAttrIndex(attrVo.getCiTableName(), attrVo.getId());
                         }
                     }
                 } catch (Exception ex) {

@@ -28,6 +28,7 @@ import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
+import neatlogic.framework.cmdb.exception.attr.InsertAttrToSchemaException;
 import neatlogic.framework.cmdb.exception.ci.*;
 import neatlogic.framework.cmdb.utils.RelUtil;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
@@ -151,6 +152,17 @@ public class CiServiceImpl implements CiService, ICiCrossoverService {
                             //这里的attrlist包含了所有集成模型的属性，不是自己模型的属性就不要添加
                             if (attrVo.getCiId().equals(ciVo.getId()) && attrVo.getTargetCiId() == null) {
                                 ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
+                                if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
+                                    if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
+                                        //创建hash字段的索引
+                                        int indexCount = ciSchemaMapper.getIndexCount(TenantContext.get().getDataDbName(), attrVo.getCiId());
+                                        if (indexCount <= 60) {
+                                            ciSchemaMapper.addAttrIndex(attrVo.getCiTableName(), attrVo.getId());
+                                        } else {
+                                            throw new InsertAttrToSchemaException(attrVo.getName(), 60);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
