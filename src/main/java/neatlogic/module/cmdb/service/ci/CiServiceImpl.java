@@ -15,6 +15,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.ci;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.asynchronization.threadlocal.UserContext;
 import neatlogic.framework.cmdb.crossover.ICiCrossoverService;
@@ -26,6 +28,7 @@ import neatlogic.framework.cmdb.dto.ci.RelVo;
 import neatlogic.framework.cmdb.dto.cientity.CiEntityVo;
 import neatlogic.framework.cmdb.dto.customview.CustomViewVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
+import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInExpressionException;
 import neatlogic.framework.cmdb.exception.attr.AttrIsUsedInUniqueRuleException;
 import neatlogic.framework.cmdb.exception.attr.InsertAttrToSchemaException;
@@ -60,6 +63,143 @@ import java.util.stream.Collectors;
 
 @Service
 public class CiServiceImpl implements CiService, ICiCrossoverService {
+    @Override
+    public JSONArray validateImportCi(List<CiVo> newCiList) {
+        JSONArray dataList = new JSONArray();
+        if (CollectionUtils.isNotEmpty(newCiList)) {
+            Map<Long, CiVo> newCiMap = new HashMap<>();
+            for(CiVo ciVo : newCiList){
+                newCiMap.put(ciVo.getId(), ciVo);
+            }
+            for (CiVo ciVo : newCiList) {
+                JSONObject dataObj = new JSONObject();
+                dataObj.put("name", ciVo.getName());
+                dataObj.put("label", ciVo.getLabel());
+                dataObj.put("error", new JSONArray());
+                if (StringUtils.isNotBlank(ciVo.getTypeName()) && (ciMapper.getCiTypeByName(ciVo.getTypeName()) == null)) {
+                    dataObj.getJSONArray("error").add("模型层级：" + ciVo.getTypeName() + "不存在");
+                }
+                if (ciVo.getParentCiId() != null && !newCiMap.containsKey(ciVo.getParentCiId())) {
+                    CiVo parentCiVo = ciMapper.getCiBaseInfoById(ciVo.getParentCiId());
+                    if (parentCiVo == null) {
+                        dataObj.getJSONArray("error").add("父模型：" + ciVo.getParentCiId() + "不存在");
+                    }
+                }
+                boolean hasChange = false;
+                //检查关联属性是否存在
+                if (CollectionUtils.isNotEmpty(ciVo.getAttrList())) {
+                    JSONArray attrList = new JSONArray();
+                    for (AttrVo attrVo : ciVo.getAttrList()) {
+                        JSONObject attrObj = new JSONObject();
+                        attrObj.put("name", attrVo.getName());
+                        attrObj.put("label", attrVo.getLabel());
+                        attrObj.put("error", new JSONArray());
+                        AttrVo oldAttrVo = attrMapper.getAttrByCiIdAndName(ciVo.getId(), attrVo.getName());
+                        if (oldAttrVo == null) {
+                            attrObj.put("_action", "insert");
+                            hasChange = true;
+                        } else {
+                            if (!Objects.equals(oldAttrVo.getType(), attrVo.getType())) {
+                                attrObj.put("_action", "update");
+                                attrObj.getJSONArray("error").add("属性类型发生变化，原类型是“" + oldAttrVo.getTypeText() + "”，新类型是“" + attrVo.getTypeText() + "”");
+                            } else if (Objects.equals(oldAttrVo.getName(), attrVo.getName())
+                                    && Objects.equals(oldAttrVo.getLabel(), attrVo.getLabel())
+                                    && Objects.equals(oldAttrVo.getIsRequired(), attrVo.getIsRequired())
+                                    && Objects.equals(oldAttrVo.getConfigStr(), attrVo.getConfigStr())) {
+                                attrObj.put("_action", "same");
+                                //更新属性id为旧属性id
+                                attrVo.setId(oldAttrVo.getId());
+                            } else {
+                                attrObj.put("_action", "update");
+                                hasChange = true;
+                            }
+                        }
+                        if (attrVo.getTargetCiId() != null && !newCiMap.containsKey(attrVo.getTargetCiId())) {
+                            CiVo targetCiVo = ciMapper.getCiBaseInfoById(attrVo.getTargetCiId());
+                            if (targetCiVo == null) {
+                                attrObj.getJSONArray("error").add("目标模型：" + attrVo.getTargetCiId() + "不存在");
+                            }
+                        }
+                        attrList.add(attrObj);
+                    }
+                    dataObj.put("attrList", attrList);
+                }
+                //检查关系对端是否存在
+                if (CollectionUtils.isNotEmpty(ciVo.getRelList())) {
+                    JSONArray relList = new JSONArray();
+                    for (RelVo relVo : ciVo.getRelList()) {
+                        JSONObject relObj = new JSONObject();
+                        RelVo oldRelVo = relMapper.getRelById(relVo.getId());
+                        if (oldRelVo == null) {
+                            relObj.put("_action", "insert");
+                            hasChange = true;
+                        } else {
+                            if (
+                                    Objects.equals(oldRelVo.getToCiId(), relVo.getToCiId())
+                                            && Objects.equals(oldRelVo.getFromCiId(), relVo.getFromCiId())
+                                            && Objects.equals(oldRelVo.getToName(), relVo.getToName())
+                                            && Objects.equals(oldRelVo.getToLabel(), relVo.getToLabel())
+                                            && Objects.equals(oldRelVo.getFromName(), relVo.getFromName())
+                                            && Objects.equals(oldRelVo.getFromLabel(), relVo.getFromLabel())
+                                            && Objects.equals(oldRelVo.getToIsRequired(), relVo.getToIsRequired())
+                                            && Objects.equals(oldRelVo.getFromIsRequired(), relVo.getFromIsRequired())
+                                            && Objects.equals(oldRelVo.getToRule(), relVo.getToRule())
+                                            && Objects.equals(oldRelVo.getFromRule(), relVo.getFromRule())
+                                            && Objects.equals(oldRelVo.getToGroupId(), relVo.getToGroupId())
+                                            && Objects.equals(oldRelVo.getFromGroupId(), relVo.getFromGroupId())
+                            ) {
+                                relObj.put("_action", "same");
+                            } else {
+                                relObj.put("_action", "update");
+                                hasChange = true;
+                            }
+                        }
+                        relObj.put("fromCiName", relVo.getFromCiName());
+                        relObj.put("fromCiLabel", relVo.getFromCiLabel());
+                        relObj.put("toCiName", relVo.getToCiName());
+                        relObj.put("toCiLabel", relVo.getToCiLabel());
+                        relObj.put("toName", relVo.getToName());
+                        relObj.put("fromName", relVo.getFromName());
+                        relObj.put("toLabel", relVo.getToLabel());
+                        relObj.put("fromLabel", relVo.getFromLabel());
+                        relObj.put("direction", relVo.getDirection());
+                        relObj.put("error", new JSONArray());
+                        if (StringUtils.isNotBlank(relVo.getTypeText()) && (relMapper.getRelTypeByName(relVo.getTypeText()) == null)) {
+                            relObj.getJSONArray("error").add("类型：" + relVo.getTypeText() + "不存在");
+                        }
+                        if (relVo.getDirection().equals(RelDirectionType.FROM.getValue())) {
+                            if (!newCiMap.containsKey(relVo.getToCiId())) {
+                                CiVo toCiVo = ciMapper.getCiBaseInfoById(relVo.getToCiId());
+                                if (toCiVo == null) {
+                                    relObj.getJSONArray("error").add("下游模型：" + relVo.getToCiId() + "不存在");
+                                }
+                            }
+                        } else if (relVo.getDirection().equals(RelDirectionType.TO.getValue())) {
+                            if (!newCiMap.containsKey(relVo.getFromCiId())) {
+                                CiVo fromCiVo = ciMapper.getCiBaseInfoById(relVo.getFromCiId());
+                                if (fromCiVo == null) {
+                                    relObj.getJSONArray("error").add("上游模型：" + relVo.getFromCiId() + "不存在");
+                                }
+                            }
+                        }
+                        relList.add(relObj);
+                    }
+                    dataObj.put("relList", relList);
+                }
+                if (ciMapper.getCiBaseInfoById(ciVo.getId()) == null) {
+                    dataObj.put("_action", "insert");
+                } else {
+                    if (hasChange) {
+                        dataObj.put("_action", "update");
+                    } else {
+                        dataObj.put("_action", "same");
+                    }
+                }
+                dataList.add(dataObj);
+            }
+        }
+        return dataList;
+    }
 
     @Resource
     private CiViewMapper ciViewMapper;

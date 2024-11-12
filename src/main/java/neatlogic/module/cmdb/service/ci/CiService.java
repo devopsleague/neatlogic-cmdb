@@ -15,12 +15,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.service.ci;
 
+import com.alibaba.fastjson.JSONArray;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 public interface CiService {
+    JSONArray validateImportCi(List<CiVo> ciList);
+
     CiVo getCiById(Long id);
 
     @Transactional

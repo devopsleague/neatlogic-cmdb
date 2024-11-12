@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.ci;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.asynchronization.threadlocal.TenantContext;
 import neatlogic.framework.auth.core.AuthAction;
@@ -22,10 +23,7 @@ import neatlogic.framework.cmdb.auth.label.CI_MODIFY;
 import neatlogic.framework.cmdb.dto.ci.*;
 import neatlogic.framework.cmdb.enums.RelDirectionType;
 import neatlogic.framework.cmdb.exception.attr.AttrNameRepeatException;
-import neatlogic.framework.cmdb.exception.ci.CiIsAbstractedException;
-import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
-import neatlogic.framework.cmdb.exception.ci.CiTypeNotFoundException;
-import neatlogic.framework.cmdb.exception.ci.RelIsExistsException;
+import neatlogic.framework.cmdb.exception.ci.*;
 import neatlogic.framework.cmdb.exception.reltype.RelTypeNotFoundException;
 import neatlogic.framework.common.constvalue.ApiParamType;
 import neatlogic.framework.restful.annotation.Description;
@@ -114,6 +112,38 @@ public class ImportCiApi extends PrivateBinaryStreamApiComponentBase {
                     zin.closeEntry();
                 }
                 zin.close();
+            }
+            //校验导入数据
+            JSONArray dataList = ciService.validateImportCi(newCiList);
+            if (CollectionUtils.isNotEmpty(dataList)) {
+                JSONArray errorList = new JSONArray();
+                for (int i = 0; i < dataList.size(); i++) {
+                    JSONObject dataObj = dataList.getJSONObject(i);
+                    if (CollectionUtils.isNotEmpty(dataObj.getJSONArray("error"))) {
+                        errorList.addAll(dataObj.getJSONArray("error"));
+                    }
+                    JSONArray attrList = dataObj.getJSONArray("attrList");
+                    if (CollectionUtils.isNotEmpty(attrList)) {
+                        for (int a = 0; a < attrList.size(); a++) {
+                            JSONObject attrObj = attrList.getJSONObject(a);
+                            if (CollectionUtils.isNotEmpty(attrObj.getJSONArray("error"))) {
+                                errorList.addAll(attrObj.getJSONArray("error"));
+                            }
+                        }
+                    }
+                    JSONArray relList = dataObj.getJSONArray("relList");
+                    if (CollectionUtils.isNotEmpty(relList)) {
+                        for (int a = 0; a < relList.size(); a++) {
+                            JSONObject relObj = relList.getJSONObject(a);
+                            if (CollectionUtils.isNotEmpty(relObj.getJSONArray("error"))) {
+                                errorList.addAll(relObj.getJSONArray("error"));
+                            }
+                        }
+                    }
+                }
+                if(CollectionUtils.isNotEmpty(errorList)){
+                    throw new CiImportException(errorList);
+                }
             }
             //重新排序，父模型先写入
             newCiList.sort((o1, o2) -> {
