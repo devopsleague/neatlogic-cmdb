@@ -78,6 +78,7 @@ public class AttrExpressionRebuildManager {
         attrExpressionRebuildAuditMapper = _attrExpressionRebuildAuditMapper;
     }
 
+
     @PostConstruct
     public void init() {
         Thread t = new Thread(new NeatLogicThread("ATTR-EXPRESSION-REBUILD-MANAGER") {
@@ -393,20 +394,6 @@ public class AttrExpressionRebuildManager {
                                 } catch (ScriptException e) {
                                     logger.warn(e.getMessage(), e);
                                 }
-/*
-                                ScriptEngine se = JavascriptUtil.getEngine();
-                                try {
-                                    se.put("$value", expressionV);
-                                    se.put("$attr", dataObj);
-                                    se.eval(script);
-                                    Object value = se.get("$value");
-                                    if (value != null) {
-                                        expressionV = value.toString();
-                                    }
-                                } catch (ScriptException e) {
-                                    logger.warn(e.getMessage(), e);
-                                }
- */
                             }
                         }
 
