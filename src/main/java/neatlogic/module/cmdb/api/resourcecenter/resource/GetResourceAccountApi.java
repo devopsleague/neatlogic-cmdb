@@ -45,11 +45,12 @@ import java.util.Objects;
 
 
 /**
- * 1、先根据resourceId 或 （ip、port、nodeName、nodeType)获取资产
- * 2、tagent则通过ip找账号， 否则根据资产绑定的账号找，找到后return
- * 3、通过对应资产的os找账号，找到后return
- * 4、找协议（端口）+用户的默认账号，找到后return
- * 5、如果账号id存在，则return对应账号
+ * 1、先根据resourceId 或 （ip、port、nodeName、nodeType)找到资产
+ * 2、协议是tagent，则通过（ip+协议id）找账号，找到后return
+ * 3、通过（资产id+协议+协议端口+账号名）找到绑定的账号，找到后return
+ * 4、通过（对应资产的os对应的资产id+协议+协议端口+账号名）找账号，找到后return
+ * 5、通过（协议id+账号名）找到默认账号，找到后return
+ * 6、通过（账号id）找账号，找到后return
  */
 @Service
 @AuthAction(action = CMDB_BASE.class)
