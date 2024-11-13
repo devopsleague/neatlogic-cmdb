@@ -2473,7 +2473,7 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
             return globalAttrFilterVo;
         }
         List<Long> longValueList = new ArrayList<>();
-        List<GlobalAttrItemVo> itemList = globalAttrVo.getItemList();
+        List<GlobalAttrItemVo> itemList = globalAttrMapper.getAllGlobalAttrItemByAttrId(globalAttrVo.getId());
         Map<String, GlobalAttrItemVo> globalAttrItemMap = itemList.stream().collect(Collectors.toMap(GlobalAttrItemVo::getValue, e -> e));
         for (String value : valueList) {
             GlobalAttrItemVo globalAttrItemVo = globalAttrItemMap.get(value);
