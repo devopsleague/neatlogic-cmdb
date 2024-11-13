@@ -17,8 +17,8 @@ package neatlogic.module.cmdb.attrexpression;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import neatlogic.framework.asynchronization.queue.NeatLogicBlockingQueue;
 import neatlogic.framework.asynchronization.thread.NeatLogicThread;
-import neatlogic.framework.asynchronization.threadpool.CachedThreadPool;
 import neatlogic.framework.cmdb.dto.attrexpression.AttrExpressionRelVo;
 import neatlogic.framework.cmdb.dto.attrexpression.RebuildAuditVo;
 import neatlogic.framework.cmdb.dto.ci.AttrVo;
@@ -44,12 +44,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import javax.script.ScriptEngine;
+import javax.script.Bindings;
+import javax.script.CompiledScript;
 import javax.script.ScriptException;
+import javax.script.SimpleBindings;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 
@@ -57,7 +58,7 @@ import java.util.stream.Collectors;
 public class AttrExpressionRebuildManager {
     private static final String EXPRESSION_TYPE = "expression";
     private static final Logger logger = LoggerFactory.getLogger(AttrExpressionRebuildManager.class);
-    private static final BlockingQueue<RebuildAuditVo> rebuildQueue = new LinkedBlockingQueue<>();
+    private static final NeatLogicBlockingQueue<RebuildAuditVo> rebuildQueue = new NeatLogicBlockingQueue<>(new LinkedBlockingQueue<>());
     private static RelEntityMapper relEntityMapper;
     private static AttrExpressionRebuildAuditMapper attrExpressionRebuildAuditMapper;
     private static AttrMapper attrMapper;
@@ -86,7 +87,8 @@ public class AttrExpressionRebuildManager {
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
                         rebuildAuditVo = rebuildQueue.take();
-                        CachedThreadPool.execute(new Builder(rebuildAuditVo));
+                        new Builder(rebuildAuditVo).execute();
+                        //CachedThreadPool.execute(new Builder(rebuildAuditVo));
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
                         break;
@@ -178,16 +180,15 @@ public class AttrExpressionRebuildManager {
 
     }
 
-    static class Builder extends NeatLogicThread {
+    static class Builder /*extends NeatLogicThread*/ {
         private final RebuildAuditVo rebuildAuditVo;
 
         public Builder(RebuildAuditVo _rebuildAuditVo) {
-            super(_rebuildAuditVo.getUserContext(), _rebuildAuditVo.getTenantContext());
+            //super(_rebuildAuditVo.getUserContext(), _rebuildAuditVo.getTenantContext());
             rebuildAuditVo = _rebuildAuditVo;
         }
 
-        @Override
-        protected void execute() {
+        public void execute() {
             //有配置项id的说明需要更新关联配置项的属性
             if (rebuildAuditVo.getCiId() != null && rebuildAuditVo.getCiEntityId() != null && rebuildAuditVo.getType().equals(RebuildAuditVo.Type.INVOKED.getValue()) && CollectionUtils.isNotEmpty(rebuildAuditVo.getAttrIdList())) {
                 //根据修改的配置项找到会影响的模型属性列表
@@ -380,6 +381,19 @@ public class AttrExpressionRebuildManager {
                         if (attrVo.getConfig().containsKey("script")) {
                             String script = attrVo.getConfig().getString("script");
                             if (StringUtils.isNotBlank(script)) {
+                                try {
+                                    CompiledScript se = JavascriptUtil.getCompiledScript(script, true);
+                                    Bindings params = new SimpleBindings();
+                                    params.put("$attr", dataObj);
+                                    params.put("$value", expressionV);
+                                    Object v = se.eval(params);
+                                    if (v != null) {
+                                        expressionV = v.toString();
+                                    }
+                                } catch (ScriptException e) {
+                                    logger.warn(e.getMessage(), e);
+                                }
+/*
                                 ScriptEngine se = JavascriptUtil.getEngine();
                                 try {
                                     se.put("$value", expressionV);
@@ -389,9 +403,10 @@ public class AttrExpressionRebuildManager {
                                     if (value != null) {
                                         expressionV = value.toString();
                                     }
-                                } catch (ScriptException ignored) {
-                                    logger.warn(ignored.getMessage(), ignored);
+                                } catch (ScriptException e) {
+                                    logger.warn(e.getMessage(), e);
                                 }
+ */
                             }
                         }
 
