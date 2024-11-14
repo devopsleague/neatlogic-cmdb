@@ -42,6 +42,7 @@ import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiUniqueAttrNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiUniqueRuleException;
 import neatlogic.framework.cmdb.exception.cientity.*;
+import neatlogic.framework.cmdb.exception.globalattr.GlobalAttrValueIrregularException;
 import neatlogic.framework.cmdb.exception.transaction.TransactionAuthException;
 import neatlogic.framework.cmdb.exception.transaction.TransactionStatusIrregularException;
 import neatlogic.framework.cmdb.utils.RelUtil;
@@ -793,7 +794,9 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
     public boolean validateCiEntityTransaction(CiEntityTransactionVo ciEntityTransactionVo) {
         List<AttrVo> attrList = attrMapper.getAttrByCiId(ciEntityTransactionVo.getCiId());
         List<RelVo> relList = RelUtil.ClearRepeatRel(relMapper.getRelByCiId(ciEntityTransactionVo.getCiId()));
-        List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo());
+        List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(new GlobalAttrVo() {{
+            this.setIsActive(1);
+        }});
         CiVo ciVo = ciMapper.getCiById(ciEntityTransactionVo.getCiId());
         //如果外部有自定义唯一规则，则使用外部的唯一规则
         if (CollectionUtils.isNotEmpty(ciEntityTransactionVo.getUniqueAttrIdList())) {
@@ -848,7 +851,11 @@ public class CiEntityServiceImpl implements CiEntityService, ICiEntityCrossoverS
                 JSONObject globalAttrEntityData = ciEntityTransactionVo.getGlobalAttrEntityDataByAttrId(globalAttrVo.getId());
                 if (globalAttrEntityData != null) {
                     //修正属性基本信息，多余属性不要
+
                     JSONArray valueList = globalAttrEntityData.getJSONArray("valueList");
+                    if (globalAttrVo.getIsMultiple().equals(0) && valueList.size() > 1) {
+                        throw new GlobalAttrValueIrregularException.MultipleException(globalAttrVo);
+                    }
                     globalAttrEntityData.clear();
                     globalAttrEntityData.put("valueList", valueList);
                     globalAttrEntityData.put("label", globalAttrVo.getLabel());
