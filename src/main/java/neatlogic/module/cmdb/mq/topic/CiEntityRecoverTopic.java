@@ -68,6 +68,11 @@ public class CiEntityRecoverTopic extends TopicBase<CiEntityTransactionVo> {
     RelMapper relMapper;
 
     @Override
+    public String getHandler() {
+        return "artemis";
+    }
+
+    @Override
     public String getLabel() {
         return "配置项恢复";
     }
@@ -79,7 +84,7 @@ public class CiEntityRecoverTopic extends TopicBase<CiEntityTransactionVo> {
 
     @Override
     protected JSONObject generateTopicContent(TopicVo topicVo, CiEntityTransactionVo content) {
-        if(topicVo == null){
+        if (topicVo == null) {
             return null;
         }
         if (topicVo.getConfig() == null) {

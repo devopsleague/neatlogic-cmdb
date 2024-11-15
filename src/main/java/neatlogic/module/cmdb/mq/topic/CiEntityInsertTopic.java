@@ -64,6 +64,11 @@ public class CiEntityInsertTopic extends TopicBase<CiEntityTransactionVo> {
     RelMapper relMapper;
 
     @Override
+    public String getHandler() {
+        return "artemis";
+    }
+
+    @Override
     public String getName() {
         return "cmdb/cientity/insert";
     }
@@ -80,7 +85,7 @@ public class CiEntityInsertTopic extends TopicBase<CiEntityTransactionVo> {
 
     @Override
     protected JSONObject generateTopicContent(TopicVo topicVo, CiEntityTransactionVo content) {
-        if(topicVo == null){
+        if (topicVo == null) {
             return null;
         }
         if (topicVo.getConfig() == null) {

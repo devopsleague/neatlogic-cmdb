@@ -66,6 +66,11 @@ public class CiEntityDeleteTopic extends TopicBase<CiEntityTransactionVo> {
     }
 
     @Override
+    public String getHandler() {
+        return "artemis";
+    }
+
+    @Override
     protected JSONObject generateTopicContent(TopicVo topicVo, CiEntityTransactionVo content) {
         if (topicVo.getConfig() == null) {
             return null;

@@ -69,6 +69,11 @@ public class CiEntityUpdateTopic extends TopicBase<CiEntityTransactionVo> {
     @Resource
     GlobalAttrMapper globalAttrMapper;
 
+    @Override
+    public String getHandler() {
+        return "artemis";
+    }
+
     @Resource
     RelMapper relMapper;
 
@@ -79,7 +84,7 @@ public class CiEntityUpdateTopic extends TopicBase<CiEntityTransactionVo> {
 
     @Override
     protected JSONObject generateTopicContent(TopicVo topicVo, CiEntityTransactionVo content) {
-        if(topicVo == null){
+        if (topicVo == null) {
             return null;
         }
         if (topicVo.getConfig() == null) {

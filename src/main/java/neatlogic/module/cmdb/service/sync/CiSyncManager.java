@@ -421,22 +421,33 @@ public class CiSyncManager {
                                 for (int i = 0; i < subDataList.size(); i++) {
                                     if (!(subDataList.get(i) instanceof JSONObject)) {
                                         String value = subDataList.getString(i);
-                                        GlobalAttrItemVo item = globalAttrVo.getItem(value);
-                                        if (item != null) {
-                                            globalAttrItemList.add(item);
-                                        } else {
-                                            throw new GlobalAttrItemIsNotExistsException(globalAttrVo, value);
+                                        if(StringUtils.isNotBlank(value)) {
+                                            GlobalAttrItemVo attrItem = new GlobalAttrItemVo();
+                                            attrItem.setAttrId(globalAttrVo.getId());
+                                            attrItem.setValue(value);
+                                            List<GlobalAttrItemVo> checkItemList = globalAttrMapper.searchGlobalAttrItem(attrItem);
+                                            if (CollectionUtils.isNotEmpty(checkItemList)) {
+                                                globalAttrItemList.addAll(checkItemList);
+                                            } else {
+                                                throw new GlobalAttrItemIsNotExistsException(globalAttrVo, value);
+                                            }
                                         }
                                     }
                                 }
                             } else if (!(dataObj.get(mappingVo.getField(parentKey)) instanceof JSONObject)) {
                                 //其他标值
                                 String value = dataObj.getString(mappingVo.getField(parentKey));
-                                GlobalAttrItemVo item = globalAttrVo.getItem(value);
-                                if (item != null) {
-                                    globalAttrItemList.add(item);
-                                } else {
-                                    throw new GlobalAttrItemIsNotExistsException(globalAttrVo, value);
+                                //GlobalAttrItemVo item = globalAttrVo.getItem(value);
+                                if(StringUtils.isNotBlank(value)) {
+                                    GlobalAttrItemVo attrItem = new GlobalAttrItemVo();
+                                    attrItem.setAttrId(globalAttrVo.getId());
+                                    attrItem.setValue(value);
+                                    List<GlobalAttrItemVo> checkItemList = globalAttrMapper.searchGlobalAttrItem(attrItem);
+                                    if (CollectionUtils.isNotEmpty(checkItemList)) {
+                                        globalAttrItemList.addAll(checkItemList);
+                                    } else {
+                                        throw new GlobalAttrItemIsNotExistsException(globalAttrVo, value);
+                                    }
                                 }
                             }
                             ciEntityTransactionVo.addGlobalAttrEntityData(globalAttrVo, (JSONArray) JSON.toJSON(globalAttrItemList));
