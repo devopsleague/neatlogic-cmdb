@@ -456,14 +456,18 @@ public class BatchImportHandler {
                                                 } else if (header instanceof GlobalAttrVo) {
                                                     GlobalAttrVo globalAttr = (GlobalAttrVo) header;
                                                     JSONArray valueList = new JSONArray();
-                                                    for (String c : content.split(",")) {
-                                                        GlobalAttrItemVo attrItem = new GlobalAttrItemVo();
-                                                        attrItem.setAttrId(globalAttr.getId());
-                                                        attrItem.setValue(c);
-                                                        List<GlobalAttrItemVo> globalAttrItemList = globalAttrMapper.searchGlobalAttrItem(attrItem);
-                                                        // Optional<GlobalAttrItemVo> op = globalAttr.getItemList().stream().filter(d -> d.getValue().equalsIgnoreCase(c)).findFirst();
-                                                        //op.ifPresent(valueList::add);
-                                                        valueList.addAll(globalAttrItemList);
+                                                    if (StringUtils.isNotBlank(content)) {
+                                                        for (String c : content.split(",")) {
+                                                            if (StringUtils.isNotBlank(c)) {
+                                                                GlobalAttrItemVo attrItem = new GlobalAttrItemVo();
+                                                                attrItem.setAttrId(globalAttr.getId());
+                                                                attrItem.setValue(c);
+                                                                List<GlobalAttrItemVo> globalAttrItemList = globalAttrMapper.searchGlobalAttrItem(attrItem);
+                                                                // Optional<GlobalAttrItemVo> op = globalAttr.getItemList().stream().filter(d -> d.getValue().equalsIgnoreCase(c)).findFirst();
+                                                                //op.ifPresent(valueList::add);
+                                                                valueList.addAll(globalAttrItemList);
+                                                            }
+                                                        }
                                                     }
                                                     if (CollectionUtils.isNotEmpty(valueList)) {
                                                         ciEntityTransactionVo.addGlobalAttrEntityData(globalAttr, valueList);
