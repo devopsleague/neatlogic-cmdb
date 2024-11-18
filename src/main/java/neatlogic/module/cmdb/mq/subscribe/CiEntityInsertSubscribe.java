@@ -16,10 +16,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 package neatlogic.module.cmdb.mq.subscribe;
 
 import neatlogic.framework.mq.core.SubscribeHandlerBase;
+import neatlogic.framework.mq.dto.SubscribeVo;
 import org.springframework.stereotype.Service;
-
-import javax.jms.JMSException;
-import javax.jms.TextMessage;
 
 @Service
 public class CiEntityInsertSubscribe extends SubscribeHandlerBase {
@@ -28,12 +26,9 @@ public class CiEntityInsertSubscribe extends SubscribeHandlerBase {
         return "配置添加处理组件";
     }
 
+
     @Override
-    protected void myOnMessage(TextMessage m) {
-        try {
-            System.out.println(m.getText());
-        } catch (JMSException e) {
-            e.printStackTrace();
-        }
+    protected void myOnMessage(SubscribeVo subscribeVo, Object message) {
+        System.out.println("from " + subscribeVo.getHandler() + ":" + message);
     }
 }
