@@ -6,6 +6,7 @@ import neatlogic.framework.cmdb.dto.ci.AttrVo;
 import neatlogic.framework.cmdb.dto.ci.CiViewVo;
 import neatlogic.framework.cmdb.dto.ci.CiVo;
 import neatlogic.framework.cmdb.dto.ci.RelVo;
+import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrItemVo;
 import neatlogic.framework.cmdb.dto.globalattr.GlobalAttrVo;
 import neatlogic.framework.cmdb.exception.ci.CiNotFoundException;
 import neatlogic.framework.cmdb.exception.ci.CiUniqueRuleAttrTypeIrregularException;
@@ -134,6 +135,10 @@ public class GetCiForProcessMappingApi extends PrivateApiComponentBase {
             GlobalAttrVo globalAttrVo = new GlobalAttrVo();
             globalAttrVo.setIsActive(1);
             List<GlobalAttrVo> globalAttrList = globalAttrMapper.searchGlobalAttr(globalAttrVo);
+            for (GlobalAttrVo globalAttr : globalAttrList) {
+                List<GlobalAttrItemVo> itemList = globalAttrMapper.getAllGlobalAttrItemByAttrId(globalAttr.getId());
+                globalAttr.setItemList(itemList);
+            }
             ciVo.setGlobalAttrList(globalAttrList);
         }
         // 字段显示设置列表
