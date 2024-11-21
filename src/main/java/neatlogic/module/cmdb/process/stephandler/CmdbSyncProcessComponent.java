@@ -45,7 +45,7 @@ import neatlogic.framework.form.constvalue.FormHandler;
 import neatlogic.framework.process.constvalue.ProcessFlowDirection;
 import neatlogic.framework.process.constvalue.ProcessStepMode;
 import neatlogic.framework.process.constvalue.ProcessTaskAuditType;
-import neatlogic.framework.process.constvalue.ProcessTaskOperationType;
+import neatlogic.framework.process.constvalue.ProcessTaskStepOperationType;
 import neatlogic.framework.process.constvalue.automatic.FailPolicy;
 import neatlogic.framework.process.crossover.*;
 import neatlogic.framework.process.dto.*;
@@ -359,9 +359,9 @@ public class CmdbSyncProcessComponent extends ProcessStepHandlerBase {
                 ProcessTaskStepVo processTaskStepVo = processTaskCrossoverMapper.getProcessTaskStepBaseInfoById(currentProcessTaskStepVo.getId());
                 JSONObject paramObj = processTaskStepVo.getParamObj();
                 paramObj.put("nextStepId", nextStepId);
-                paramObj.put("action", ProcessTaskOperationType.STEP_COMPLETE.getValue());
+                paramObj.put("action", ProcessTaskStepOperationType.STEP_COMPLETE.getValue());
                 /* 自动处理 **/
-                doNext(ProcessTaskOperationType.STEP_COMPLETE, new ProcessStepThread(processTaskStepVo) {
+                doNext(ProcessTaskStepOperationType.STEP_COMPLETE, new ProcessStepThread(processTaskStepVo) {
                     @Override
                     public void myExecute() {
                         handler.autoComplete(processTaskStepVo);
