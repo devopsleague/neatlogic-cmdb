@@ -15,6 +15,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.*/
 
 package neatlogic.module.cmdb.api.cientity;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.auth.core.AuthAction;
@@ -189,7 +190,7 @@ public class BatchSaveCiEntitySimpleApi extends PrivateApiComponentBase {
      * @return 转换后的配置项入参
      */
     private JSONObject getCiEntityResultDate(CiVo ciVo, JSONObject entityDataParam, Map<String, AttrVo> attrMap, Map<String, RelVo> relMap, Long ciEntityId, Map<Long, CiVo> ciMap, String editMode) {
-        JSONObject ciEntityResult = JSONObject.parseObject(JSONObject.toJSONString(ciVo));
+        JSONObject ciEntityResult = JSON.parseObject(JSON.toJSONString(ciVo));
         ciEntityResult.put("ciId", ciVo.getId());
         ciEntityResult.put("id", null);
         JSONObject attrEntityData = new JSONObject();
@@ -205,7 +206,7 @@ public class BatchSaveCiEntitySimpleApi extends PrivateApiComponentBase {
         //遍历入参属性 key value,转换为对应id
         for (Map.Entry<String, Object> attrEntity : entityDataParam.entrySet()) {
             String entityKey = attrEntity.getKey();
-            JSONArray entityValueArray = JSONArray.parseArray(JSONArray.toJSONString(attrEntity.getValue()));
+            JSONArray entityValueArray = JSON.parseArray(JSON.toJSONString(attrEntity.getValue()));
             if (attrMap.containsKey(entityKey)) {
                 JSONObject ciEntityAttr = new JSONObject();
                 AttrVo attrVo = attrMap.get(entityKey);
@@ -335,7 +336,7 @@ public class BatchSaveCiEntitySimpleApi extends PrivateApiComponentBase {
                 "    }\n" +
                 "  ]\n" +
                 "}";
-        return JSONObject.parseObject(json);
+        return JSON.parseObject(json);
     }
 
 }

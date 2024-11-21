@@ -41,7 +41,6 @@ import neatlogic.framework.util.Md5Util;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
-import neatlogic.module.cmdb.dao.mapper.cientity.CiEntityMapper;
 import neatlogic.module.cmdb.service.ci.CiAuthChecker;
 import neatlogic.module.cmdb.service.cientity.CiEntityService;
 import neatlogic.module.cmdb.utils.CiEntityUtils;
@@ -64,8 +63,6 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
     @Resource
     private CiEntityService ciEntityService;
 
-    @Resource
-    private CiEntityMapper ciEntityMapper;
 
     @Resource
     private CiMapper ciMapper;
@@ -151,6 +148,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                 this.add(new JSONObject() {{
                     this.put("id", "配置项id，优先级高于uuid");
                     this.put("uuid", "配置项uuid");
+                    this.put("ciId", "模型id");
                     //this.put("editMode", "global|partial");
                     this.put("entityData", new JSONObject() {{
                         this.put("attrname1（引用型属性更新）", new JSONArray() {{
@@ -190,18 +188,18 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             JSONObject returnCiEntityObj = new JSONObject();
             Long id = ciEntityObj.getLong("id");
             String uuid = ciEntityObj.getString("uuid");
+            Long ciId = ciEntityObj.getLong("ciId");
             returnCiEntityObj.put("editMode", EditModeType.PARTIAL.getValue());
             JSONObject entityData = ciEntityObj.getJSONObject("entityData");
             CiVo ciVo = null;
             if (id != null) {
                 ciVo = ciMapper.getCiByCiEntityId(id);
                 returnCiEntityObj.put("id", ciEntityObj.getLong("id"));
-            }
-            if (StringUtils.isNotBlank(uuid)) {
-                if (ciVo == null) {
-                    ciVo = ciMapper.getCiByCiEntityUuid(uuid);
-                }
+            } else if (StringUtils.isNotBlank(uuid)) {
+                ciVo = ciMapper.getCiByCiEntityUuid(uuid);
                 returnCiEntityObj.put("uuid", Md5Util.isMd5(ciEntityObj.getString("uuid")) ? ciEntityObj.getString("uuid") : Md5Util.encryptMD5(ciEntityObj.getString("uuid")));
+            } else if (ciId != null) {
+                ciVo = ciMapper.getCiById(ciId);
             }
             if (ciVo == null) {
                 throw new CiNotFoundException();
@@ -213,7 +211,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             returnCiEntityObj.put("ciId", ciVo.getId());
             JSONObject attrEntityData = new JSONObject();
             JSONObject relEntityData = new JSONObject();
-            JSONObject globalAttrData = new JSONObject();
+            //JSONObject globalAttrData = new JSONObject();
             if (MapUtils.isNotEmpty(entityData)) {
                 for (String key : entityData.keySet()) {
                     JSONArray valueList = entityData.getJSONArray(key);
