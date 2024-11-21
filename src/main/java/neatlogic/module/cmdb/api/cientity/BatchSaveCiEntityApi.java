@@ -148,7 +148,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             {
                 this.add(new JSONObject() {{
                     this.put("id", "配置项id，优先级高于uuid");
-                    this.put("uuid", "配置项uuid");
+                    this.put("uuid", "配置项uuid，如果没有id需要提供");
                     this.put("ciId", "模型id");
                     //this.put("editMode", "global|partial");
                     this.put("entityData", new JSONObject() {{
