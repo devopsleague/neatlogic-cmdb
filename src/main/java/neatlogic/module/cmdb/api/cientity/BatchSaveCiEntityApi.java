@@ -148,7 +148,7 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             {
                 this.add(new JSONObject() {{
                     this.put("id", "配置项id，优先级高于uuid");
-                    this.put("uuid", "配置项uuid，如果没有id需要提供");
+                    this.put("uuid", "配置项uuid");
                     this.put("ciId", "模型id");
                     //this.put("editMode", "global|partial");
                     this.put("entityData", new JSONObject() {{
@@ -199,9 +199,11 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
             } else if (StringUtils.isNotBlank(uuid)) {
                 ciVo = ciMapper.getCiByCiEntityUuid(uuid);
                 returnCiEntityObj.put("uuid", Md5Util.isMd5(ciEntityObj.getString("uuid")) ? ciEntityObj.getString("uuid") : Md5Util.encryptMD5(ciEntityObj.getString("uuid")));
-            } else if (ciId != null) {
+            } else {
                 //如果前端不提供uuid，则生成一个
                 returnCiEntityObj.put("uuid", UuidUtil.randomUuid());
+            }
+            if (ciId != null && ciVo == null) {
                 ciVo = ciMapper.getCiById(ciId);
             }
             if (ciVo == null) {
