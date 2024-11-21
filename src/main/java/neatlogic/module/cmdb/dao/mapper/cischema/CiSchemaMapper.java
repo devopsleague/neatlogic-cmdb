@@ -46,6 +46,8 @@ public interface CiSchemaMapper {
     @CreateCiView
     void insertAttrToCiTable(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
 
+    void updateAttrConfig(@CiId Long ciId, @Param("tableName") String tableName, @Param("attrVo") AttrVo attrVo);
+
     //@CreateCiView
     void insertCiTable(@CiId Long ciId, @Param("tableName") String tableName);
 

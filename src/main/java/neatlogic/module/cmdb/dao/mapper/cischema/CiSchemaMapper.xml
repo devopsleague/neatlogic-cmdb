@@ -80,6 +80,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.-->
         ${value}
     </insert>
 
+    <insert id="updateAttrConfig">
+        ALTER TABLE ${tableName}
+        MODIFY COLUMN `${attrVo.id}` SET(
+        <if test="attrVo.config != null and attrVo.config.members != null">
+            <foreach collection="attrVo.config.members" item="member" separator=",">'${member}'</foreach>
+        </if>
+        )
+    </insert>
+
     <insert id="insertAttrToCiTable">
         ALTER TABLE ${tableName}
         ADD COLUMN `${attrVo.id}`

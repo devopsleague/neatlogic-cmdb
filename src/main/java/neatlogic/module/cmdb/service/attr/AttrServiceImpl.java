@@ -157,6 +157,9 @@ public class AttrServiceImpl implements AttrService {
                 try {
                     if (ciSchemaMapper.checkColumnIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
                         ciSchemaMapper.insertAttrToCiTable(ciVo.getId(), ciVo.getCiTableName(), attrVo);
+                    } else if (attrVo.getType().equalsIgnoreCase("set")) {
+                        //enum型和set型属性由于成员的改变需要单独alter处理
+                        ciSchemaMapper.updateAttrConfig(ciVo.getId(), ciVo.getCiTableName(), attrVo);
                     }
                     if (Objects.equals(attrVo.getIsSearchAble(), 1)) {
                         if (ciSchemaMapper.checkIndexIsExists(TenantContext.get().getDataDbName(), attrVo.getCiId(), attrVo.getId()) == 0) {
