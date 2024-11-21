@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import neatlogic.framework.crossover.CrossoverServiceFactory;
 import neatlogic.framework.notify.crossover.INotifyServiceCrossoverService;
 import neatlogic.framework.notify.dto.InvokeNotifyPolicyConfigVo;
+import neatlogic.framework.process.operationauth.core.IOperationType;
 import neatlogic.framework.process.constvalue.ProcessTaskOperationType;
+import neatlogic.framework.process.constvalue.ProcessTaskStepOperationType;
 import neatlogic.framework.process.dto.ProcessStepVo;
 import neatlogic.framework.process.dto.ProcessStepWorkerPolicyVo;
 import neatlogic.framework.process.dto.ProcessTaskStepVo;
@@ -126,20 +128,20 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         JSONObject resultObj = new JSONObject();
 
         /** 授权 **/
-        ProcessTaskOperationType[] stepActions = {
-                ProcessTaskOperationType.STEP_VIEW,
-                ProcessTaskOperationType.STEP_TRANSFER
+        IOperationType[] stepActions = {
+                ProcessTaskStepOperationType.STEP_VIEW,
+                ProcessTaskStepOperationType.STEP_TRANSFER
         };
         JSONArray authorityList = configObj.getJSONArray("authorityList");
         JSONArray authorityArray = ProcessConfigUtil.regulateAuthorityList(authorityList, stepActions);
         resultObj.put("authorityList", authorityArray);
 
         /** 按钮映射 **/
-        ProcessTaskOperationType[] stepButtons = {
-                ProcessTaskOperationType.STEP_COMPLETE,
-                ProcessTaskOperationType.STEP_BACK,
+        IOperationType[] stepButtons = {
+                ProcessTaskStepOperationType.STEP_COMPLETE,
+                ProcessTaskStepOperationType.STEP_BACK,
                 ProcessTaskOperationType.PROCESSTASK_TRANSFER,
-                ProcessTaskOperationType.STEP_ACCEPT
+                ProcessTaskStepOperationType.STEP_ACCEPT
         };
         JSONArray customButtonList = configObj.getJSONArray("customButtonList");
         JSONArray customButtonArray = ProcessConfigUtil.regulateCustomButtonList(customButtonList, stepButtons);
@@ -163,9 +165,9 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
         JSONObject resultObj = new JSONObject();
 
         /** 授权 **/
-        ProcessTaskOperationType[] stepActions = {
-                ProcessTaskOperationType.STEP_VIEW,
-                ProcessTaskOperationType.STEP_TRANSFER
+        IOperationType[] stepActions = {
+                ProcessTaskStepOperationType.STEP_VIEW,
+                ProcessTaskStepOperationType.STEP_TRANSFER
         };
         JSONArray authorityList = null;
         Integer enableAuthority = configObj.getInteger("enableAuthority");
@@ -195,11 +197,11 @@ public class CIEntitySyncProcessUtilHandler extends ProcessStepInternalHandlerBa
 
         JSONArray customButtonList = configObj.getJSONArray("customButtonList");
         /** 按钮映射列表 **/
-        ProcessTaskOperationType[] stepButtons = {
-                ProcessTaskOperationType.STEP_COMPLETE,
-                ProcessTaskOperationType.STEP_BACK,
+        IOperationType[] stepButtons = {
+                ProcessTaskStepOperationType.STEP_COMPLETE,
+                ProcessTaskStepOperationType.STEP_BACK,
                 ProcessTaskOperationType.PROCESSTASK_TRANSFER,
-                ProcessTaskOperationType.STEP_ACCEPT
+                ProcessTaskStepOperationType.STEP_ACCEPT
         };
 
         JSONArray customButtonArray = ProcessConfigUtil.regulateCustomButtonList(customButtonList, stepButtons);
