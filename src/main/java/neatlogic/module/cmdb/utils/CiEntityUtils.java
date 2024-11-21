@@ -52,6 +52,7 @@ public class CiEntityUtils {
             JSONObject ciEntityObj = ciEntityObjList.getJSONObject(ciindex);
             Long id = ciEntityObj.getLong("id");
             String uuid = ciEntityObj.getString("uuid");
+
             if (StringUtils.isNotBlank(uuid)) {
                 CiEntityTransactionVo ciEntityTransactionVo = new CiEntityTransactionVo();
                 if (id != null) {

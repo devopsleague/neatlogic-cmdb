@@ -38,6 +38,7 @@ import neatlogic.framework.restful.constvalue.OperationTypeEnum;
 import neatlogic.framework.restful.core.privateapi.PrivateApiComponentBase;
 import neatlogic.framework.util.$;
 import neatlogic.framework.util.Md5Util;
+import neatlogic.framework.util.UuidUtil;
 import neatlogic.module.cmdb.dao.mapper.ci.AttrMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.CiMapper;
 import neatlogic.module.cmdb.dao.mapper.ci.RelMapper;
@@ -199,6 +200,8 @@ public class BatchSaveCiEntityApi extends PrivateApiComponentBase implements IBa
                 ciVo = ciMapper.getCiByCiEntityUuid(uuid);
                 returnCiEntityObj.put("uuid", Md5Util.isMd5(ciEntityObj.getString("uuid")) ? ciEntityObj.getString("uuid") : Md5Util.encryptMD5(ciEntityObj.getString("uuid")));
             } else if (ciId != null) {
+                //如果前端不提供uuid，则生成一个
+                returnCiEntityObj.put("uuid", UuidUtil.randomUuid());
                 ciVo = ciMapper.getCiById(ciId);
             }
             if (ciVo == null) {
